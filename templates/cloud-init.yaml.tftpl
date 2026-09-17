@@ -1,0 +1,23 @@
+#cloud-config
+# ホスト名を isu1 / isu2 / isu3 / bench に固定する。
+# Coding Agent はこのホスト名で自分の役割を判定するため、IaC側で決めておく。
+preserve_hostname: false
+hostname: ${hostname}
+fqdn: ${hostname}
+prefer_fqdn_over_hostname: false
+
+# 本番の ISUCON と同じく GitHub の公開鍵で isucon ユーザに直接入る。
+# ubuntu にも同じ鍵を入れておくのは、isucon 側の設定を壊したときの逃げ道。
+ssh_authorized_keys: ${jsonencode(authorized_keys)}
+users:
+  - default
+  - name: isucon
+    # AMI に存在するユーザなので鍵の追加だけ行い、パスワードには触らない
+    lock_passwd: false
+    ssh_authorized_keys: ${jsonencode(authorized_keys)}
+
+# パッケージは入れない。本番では git 等の導入から自分でやるため、練習環境も同じ状態にしておく
+runcmd:
+  - [ hostnamectl, set-hostname, "${hostname}" ]
+  # 完了マーカー。SSH後に確認する
+  - touch /var/lib/cloud/instance/isucon-setup-done

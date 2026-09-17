@@ -1,0 +1,19 @@
+# cp terraform.tfvars.example terraform.tfvars して使う。github_users 以外はそのままでも動く。
+# terraform.tfvars は .gitignore に入れてある（allowed_cidrs を書いた場合に自分のIPを含むため）
+
+# SSH 公開鍵を取り込む GitHub ユーザ名。自分とチームメンバー全員分に書き換える。
+# 書き換え忘れると鍵の取得に失敗して apply が止まる。
+github_users = ["<your-github-username>"]
+
+# GitHub に登録していない公開鍵があればここに直接書く。
+ssh_public_keys = []
+
+# 22/443 を許可する送信元。空なら terraform 実行ホストのグローバルIP /32 だけを許可する。
+# チームメンバーと練習する場合や、別のホストから接続する場合は "203.0.113.10/32" のように列挙する。
+allowed_cidrs = []
+
+# 練習内容に応じて変える
+node_names        = ["isu1", "isu2", "isu3", "bench"]
+availability_zone = "ap-northeast-1a"
+instance_type     = "c5.large"
+use_spot          = false

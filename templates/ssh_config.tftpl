@@ -1,0 +1,12 @@
+# terraform apply で自動生成されます。手で編集しないでください。
+# 使い方: ~/.ssh/config に  Include /path/to/generated/ssh_config  を1行足す
+# 秘密鍵は指定しない。GitHub に登録した鍵を ssh-agent か ~/.ssh の既定の鍵として使う
+%{ for name, ip in nodes ~}
+Host ${name}
+  HostName ${ip}
+  User ${ssh_user}
+  StrictHostKeyChecking no
+  UserKnownHostsFile /dev/null
+  ServerAliveInterval 30
+
+%{ endfor ~}

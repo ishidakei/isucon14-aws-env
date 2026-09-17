@@ -1,0 +1,18 @@
+#!/bin/sh
+# 手元からベンチを回す。本番ポータルの「ベンチ実行」の代わり。
+#   bin/bench          # node_names の先頭（既定は isu1）をベンチ対象にする
+#   bin/bench isu2     # 対象を指定する
+set -eu
+
+cd "$(dirname "$0")/.."
+
+if [ $# -eq 0 ]; then
+  cmd=$(terraform output -raw bench_command)
+else
+  cmd=$(terraform output -json bench_commands | jq -er --arg t "$1" '.[$t]') || {
+    echo "unknown target: $1 (available: $(terraform output -json bench_commands | jq -r 'keys | join(" ")'))" >&2
+    exit 1
+  }
+fi
+
+exec ssh bench "$cmd"
