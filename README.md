@@ -1,7 +1,7 @@
 # ISUCON14 練習環境 (Terraform)
 
-[matsuu/aws-isucon](https://github.com/matsuu/aws-isucon) が公開している ISUCON14 用 AMI から、
-アプリ3台＋ベンチ1台を同一サブネットに立てる。サーバ内の構築は AMI が済ませているので、
+[matsuu/aws-isucon](https://github.com/matsuu/aws-isucon) で公開してくださっている
+ISUCON14 用 AMI から、アプリ3台＋ベンチ1台を同一サブネットに立てる。サーバ内の構築は AMI が済ませているので、
 Terraform はインスタンスとネットワークだけを扱う。
 
 AMI の中身（構築手順、ベンチの使い方、本来の競技環境との差分）は
@@ -19,6 +19,7 @@ VPC・サブネットはデフォルトVPCのものを流用する（練習環�
 
 ## 前提
 
+- macOS または Linux（`bin/bench` が POSIX sh スクリプトのため。Windows は WSL か Git Bash なら動くが、サポート対象外）
 - Terraform 1.6 以上
 - jq（`bin/bench` が使う）
 - AWS 認証情報（`aws sts get-caller-identity` が通ること）
@@ -106,13 +107,19 @@ aws ec2 stop-instances --instance-ids $(terraform output -json public_ips >/dev/
 ## 初期状態に戻す
 
 チューニングでDBや設定を壊した場合、`terraform destroy` → `apply` が最も確実で速い。
-数分で完全な初期状態に戻る。これがこの構成の主な利点。
+数分で完全な初期状態に戻る。
+
+ただし、これは練習環境だからできることで、本番では成り立たない。本番の環境は運営が用意した
+ものを渡されるだけで、参加者が作り直す手段があるとは限らない。
 
 途中状態を保存したい場合は AMI を作成し、`ami_id` をその ID に差し替える。
 
 ## 注意
 
 - `terraform.tfvars` は `.gitignore` に入れてある（`allowed_cidrs` を書いた場合に自分のIPを含むため）
-- `use_spot = true` は費用を抑えられるが、中断で練習が止まる。
+- `use_spot = true` にするとスポットインスタンスで起動する。AWS の余剰キャパシティを
+  オンデマンドより大幅に安い単価で使う仕組みで、その代わり AWS 側の都合（キャパシティ不足や
+  スポット価格の上昇）で 2 分前通知のうえ強制終了されることがある。この構成では中断時の動作を
+  `terminate` にしているため、中断されるとサーバごと消えて、その上での作業も失われる。
   通し練習では `false`、短時間の検証では `true` が目安
 - 使い終わったら必ず destroy する（c5.large × 4 の放置は高くつく）
